@@ -33,7 +33,7 @@ If you need extra help with Streamlit, got to the [documentation](https://docs.s
 <p>&nbsp;</p>
 
 ## The Team
-[Mark Skinner](https://github.com/aimwps)
-[Daniel Biman](https://github.com/DanielBiman)
-[Farrukh Bulbulov](https://github.com/fbulbulov)
-[Fabio Fistarol](https://github.com/fistadev)
+* [Mark Skinner](https://github.com/aimwps)
+* [Daniel Biman](https://github.com/DanielBiman)
+* [Farrukh Bulbulov](https://github.com/fbulbulov)
+* [Fabio Fistarol](https://github.com/fistadev)
