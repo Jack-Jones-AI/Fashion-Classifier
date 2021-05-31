@@ -112,12 +112,12 @@ if upload is not None:
     st.text(" ")
     st.text(" ")
 
-    # # resize
+    # # resize image
     # new_width = 28
     # new_height = 28
     # img = img.resize((new_width, new_height), Image.ANTIALIAS)
     # # format may what you want *.png, *jpg, *.gif
-    # img_res = img.save('./data/output image name.png')
+    # img_res = img.save('./data/resized_image_1.png')
 
     # img_res = Image.open(img_res)
     # st.image(img_res, caption='')
