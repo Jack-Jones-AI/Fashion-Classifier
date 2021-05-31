@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import io
 
 
 image = Image.open('./data/zalando.jpg')
@@ -30,71 +31,11 @@ st.sidebar.markdown(
     '[Fabio Fistarol](https://github.com/fistadev)')
 
 
-# @st.cache(allow_output_mutation=True)
-# def load_data(filename=None):
-#     filename_default = './data/fashion-mnist_test.csv'
-#     if not filename:
-#         filename = filename_default
-
-#     df = pd.read_csv(f"./{filename}")
-#     return df
-
-
-# df = load_data()
-
-# Define a transform to normalize the data
-transform = transforms.Compose([transforms.ToTensor(),
-                                transforms.Normalize(
-                                    (0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-                                ])
-
-# Download and load the training data
-# trainset = datasets.FashionMNIST(
-#     './data/fashion-mnist_train.csv', download=True, train=True, transform=transform)
-# testset = datasets.FashionMNIST(
-#     './data/fashion-mnist_test.csv', download=True, train=False, transform=transform)
-# trainloader = torch.utils.data.DataLoader(
-#     trainset, batch_size=64, shuffle=True)
-# testloader = torch.utils.data.DataLoader(testset, batch_size=64, shuffle=True)
-
-
-@st.cache(allow_output_mutation=True)
-# Define view_classify function
-def view_classify(img, ps, version="MNIST"):
-    ''' Function for viewing an image and it's predicted classes.
-    '''
-    ps = ps.data.numpy().squeeze()
-
-    fig, (ax1, ax2) = plt.subplots(figsize=(6, 9), ncols=2)
-    ax1.imshow(img.resize_(1, 28, 28).numpy().squeeze())
-    ax1.axis('off')
-    ax2.barh(np.arange(10), ps)
-    ax2.set_aspect(0.1)
-    ax2.set_yticks(np.arange(10))
-    if version == "MNIST":
-        ax2.set_yticklabels(np.arange(10))
-    elif version == "Fashion":
-        ax2.set_yticklabels(['T-shirt/top',
-                             'Trouser',
-                             'Pullover',
-                             'Dress',
-                             'Coat',
-                             'Sandal',
-                             'Shirt',
-                             'Sneaker',
-                             'Bag',
-                             'Ankle Boot'], size='small')
-    ax2.set_title('Class Probability')
-    ax2.set_xlim(0, 1.1)
-
-    plt.tight_layout()
-
-
 ###################
-# # load the model from disk
-PATH = './data/entire_model_v2.pt'
-# loaded_model = pickle.load(open(filename, 'rb'))
-model = torch.load(PATH)
+# # # load the model from disk
+# PATH = './data/entire_model_v2.pt'
+# # loaded_model = pickle.load(open(filename, 'rb'))
+# model = torch.load(PATH)
 
 st.title('Fashion Mninst')
 st.write("Zalando")
@@ -104,6 +45,65 @@ image = Image.open('./data/zalando_photo_1.jpg')
 st.image(image, caption='')
 
 
+@st.cache(allow_output_mutation=True)
+# load model
+class FashionCNN(nn.Module):
+
+    def __init__(self):
+        super().__init__()
+
+        self.layer1 = nn.Sequential(
+            nn.Conv2d(in_channels=1, out_channels=32,
+                      kernel_size=3, padding=1),
+            nn.BatchNorm2d(32),
+            nn.ReLU(),
+            # nn.MaxPool2d(kernel_size=2, stride=2)
+        )
+
+        self.layer2 = nn.Sequential(
+            nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+            # nn.MaxPool2d(2)
+        )
+
+        self.fc1 = nn.Linear(in_features=64*6*6, out_features=600)
+        self.drop = nn.Dropout2d(0.25)
+        self.fc2 = nn.Linear(in_features=600, out_features=120)
+        self.fc3 = nn.Linear(in_features=120, out_features=10)
+
+    def forward(self, x):
+        out = self.layer1(x)
+        out = self.layer2(out)
+        out = out.view(out.size(0), -1)
+        out = self.fc1(out)
+        out = self.drop(out)
+        out = self.fc2(out)
+        out = self.fc3(out)
+
+        return out
+
+
+PATH = "./data/entire_model_v2.pt"
+model = torch.load(PATH)
+# model.load_state_dict(torch.load(PATH))
+# model.eval()
+# st.write(model)
+
+# image -> tensor
+
+
+def transform_image(image_bytes):
+    transform = transforms.Compose([transforms.Grayscale(num_output_channels=1),
+                                    transforms.Resize((28, 28)),
+                                    transforms.ToTensor(),
+                                    transforms.Normalize((0.1307,), (0.3081,))])
+
+    image = Image.open(io.BytesIO(image_bytes))
+    return transform(image).unsqueeze(0)
+
+
+####################
 upload = st.file_uploader("Upload image")
 if upload is not None:
     st.write(type(upload))
@@ -112,15 +112,59 @@ if upload is not None:
     st.text(" ")
     st.text(" ")
 
-    # # resize image
-    # new_width = 28
-    # new_height = 28
-    # img = img.resize((new_width, new_height), Image.ANTIALIAS)
-    # # format may what you want *.png, *jpg, *.gif
-    # img_res = img.save('./data/resized_image_1.png')
 
-    # img_res = Image.open(img_res)
-    # st.image(img_res, caption='')
+# predict
+
+
+def get_prediction(image_tensor):
+    model.eval()
+    images = image_tensor.reshape(-1, 28*28)
+    outputs = model(images)
+    # max returns (value ,index)
+    _, predicted = torch.max(outputs.data, 1)
+    return predicted, outputs
+
+
+# predicted, outputs = get_prediction(image_tensor)
+# st.write(outputs)
+
+#######
+
+
+# Test the model
+# In test phase, we don't need to compute gradients (for memory efficiency)
+# with torch.no_grad():
+n_correct = 0
+n_samples = 0
+#     for images, labels in test_loader:
+#         images = images.reshape(-1, 28*28).to(device)
+#         labels = labels.to(device)
+#         outputs = model(images)
+#         # max returns (value ,index)
+#         _, predicted = torch.max(outputs.data, 1)
+n_samples += labels.size(0)
+n_correct += (predicted == labels).sum().item()
+
+acc = 100.0 * n_correct / n_samples
+print(f'Accuracy of the network on the 10000 test images: {acc} %')
+
+
+#######
+
+
+# resize image
+# new_width = 28
+# new_height = 28
+# img = img.resize((new_width, new_height), Image.ANTIALIAS)
+# # format may what you want *.png, *jpg, *.gif
+# img_res = img.save('./data/resized_image_3.png')
+
+# image = Image.open('./data/resized_image_3.png')
+# st.image(image, caption='')
+
+
+# img_res = Image.open(img_res)
+# st.image(img_res, caption='')
 
 
 # upload.save("converted.png", format="png")
@@ -140,39 +184,3 @@ if upload is not None:
 # result = model.eval()
 # st.write(result)
 # st.write("This is a: ", model)
-
-
-# pickle_out = open("model_v1.pkl", mode="wb")
-# pickle.dump(model, pickle_out)
-# pickle_out.close()
-
-
-# model_test = model.read_csv('./data/fashion-mnist_test.csv')
-# st.write(result)
-# st.write("This is a: ", result)
-
-# single_img = model.read_csv(upload)
-# max_vals, max_indices = model(single_img).max(1)
-
-# print(max_vals, max_indices)
-
-# pickle_out = open("model_v1.pkl", mode="wb")
-# pickle.dump(model, pickle_out)
-# pickle_out.close()
-
-
-# st.markdown("""---""")
-# # meet the team
-# st.subheader('Jack & Jones Team')
-
-# st.markdown(
-#     '[Mark Skinner](https://github.com/aimwps)')
-# st.markdown(
-#     '[Daniel Biman](https://github.com/DanielBiman)')
-# st.markdown(
-#     '[Farrukh Bulbulov](https://github.com/fbulbulov)')
-# st.markdown(
-#     '[Fabio Fistarol](https://github.com/fistadev)')
-
-# st.text(' ')
-# st.text(' ')
