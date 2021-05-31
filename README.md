@@ -3,7 +3,7 @@
 
 ## Check it out live
 
-- [Click here]()
+- [Click here](https://github.com/Jack-Jones-AI/Fashion-Classifier)
 
 <p>&nbsp;</p>
 
