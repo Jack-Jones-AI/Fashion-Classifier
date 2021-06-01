@@ -1,10 +1,10 @@
 import streamlit as st
 from PIL import Image
-import pickle
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torchvision import datasets, transforms
+from torch.autograd import Variable
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -84,23 +84,96 @@ class FashionCNN(nn.Module):
         return out
 
 
-PATH = "./data/entire_model_v2.pt"
+PATH = "./data/state_dict_model2.pt"
+# PATH = "./data/entire_model_v2.pt"
 model = torch.load(PATH)
 # model.load_state_dict(torch.load(PATH))
 # model.eval()
 # st.write(model)
 
+# Define view_classify function
+
+
+# def view_classify(img, ps, version="MNIST"):
+#     ''' Function for viewing an image and it's predicted classes.
+#     '''
+#     ps = ps.data.numpy().squeeze()
+
+#     fig, (ax1, ax2) = plt.subplots(figsize=(6, 9), ncols=2)
+#     ax1.imshow(img.resize_(1, 28, 28).numpy().squeeze())
+#     ax1.axis('off')
+#     ax2.barh(np.arange(10), ps)
+#     ax2.set_aspect(0.1)
+#     ax2.set_yticks(np.arange(10))
+#     if version == "MNIST":
+#         ax2.set_yticklabels(np.arange(10))
+#     elif version == "Fashion":
+#         ax2.set_yticklabels(['T-shirt/top',
+#                              'Trouser',
+#                              'Pullover',
+#                              'Dress',
+#                              'Coat',
+#                              'Sandal',
+#                              'Shirt',
+#                              'Sneaker',
+#                              'Bag',
+#                              'Ankle Boot'], size='small')
+#     ax2.set_title('Class Probability')
+#     ax2.set_xlim(0, 1.1)
+
+#     plt.tight_layout()
+#     st.pyplot(fig)
+
+def output_label(label):
+    output_mapping = {
+        0: "T-shirt/Top",
+        1: "Trouser",
+        2: "Pullover",
+        3: "Dress",
+        4: "Coat",
+        5: "Sandal",
+        6: "Shirt",
+        7: "Sneaker",
+        8: "Bag",
+        9: "Ankle Boot"
+    }
+    input = (label.item() if type(label) == torch.Tensor else label)
+    return output_mapping[input]
+
+
 # image -> tensor
 
 
-def transform_image(image_bytes):
-    transform = transforms.Compose([transforms.Grayscale(num_output_channels=1),
-                                    transforms.Resize((28, 28)),
-                                    transforms.ToTensor(),
-                                    transforms.Normalize((0.1307,), (0.3081,))])
+# def transform_image(image_bytes):
+transform = transforms.Compose([transforms.Grayscale(num_output_channels=1),
+                                transforms.Resize((28, 28)),
+                                transforms.ToTensor(),
+                                transforms.Normalize((0.5,), (0.5,))])
 
-    image = Image.open(io.BytesIO(image_bytes))
-    return transform(image).unsqueeze(0)
+# image = Image.open(io.BytesIO(image_bytes))
+# return transform(image).unsqueeze(0)
+
+
+def image_loader(image_name):
+    image = Image.open(image_name)
+    image = transform(image).float()
+    image = Variable(image, requires_grad=True)
+    image = image.unsqueeze(0)
+    return image
+
+# st.write(type(image))
+
+# predict
+
+
+def get_prediction(image_tensor):
+    # model.eval()
+    images = image_tensor
+    # images = image_tensor.reshape(-1, 28*28)
+    outputs = model(images)
+    # max returns (value ,index)
+    _, predicted = torch.max(outputs.data, 1)
+    return predicted, outputs
 
 
 ####################
@@ -109,44 +182,19 @@ if upload is not None:
     st.write(type(upload))
     img = Image.open(upload)
     st.image(img, caption='')
+    transf = image_loader(upload)
+    outputs = model(transf)
+    _, predicted = torch.max(outputs, 1)
+    # print(type(transf))
+    st.write(type(transf))
+    # predicted = get_prediction(transf)
+    st.write(outputs)
+
     st.text(" ")
     st.text(" ")
 
-
-# predict
-
-
-def get_prediction(image_tensor):
-    model.eval()
-    images = image_tensor.reshape(-1, 28*28)
-    outputs = model(images)
-    # max returns (value ,index)
-    _, predicted = torch.max(outputs.data, 1)
-    return predicted, outputs
-
-
-# predicted, outputs = get_prediction(image_tensor)
-# st.write(outputs)
 
 #######
-
-
-# Test the model
-# In test phase, we don't need to compute gradients (for memory efficiency)
-# with torch.no_grad():
-n_correct = 0
-n_samples = 0
-#     for images, labels in test_loader:
-#         images = images.reshape(-1, 28*28).to(device)
-#         labels = labels.to(device)
-#         outputs = model(images)
-#         # max returns (value ,index)
-#         _, predicted = torch.max(outputs.data, 1)
-n_samples += labels.size(0)
-n_correct += (predicted == labels).sum().item()
-
-acc = 100.0 * n_correct / n_samples
-print(f'Accuracy of the network on the 10000 test images: {acc} %')
 
 
 #######
