@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from invert import Invert
+# from invert import Invert
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
@@ -57,10 +57,10 @@ def output_label(label):
     return output_mapping[input]
 
 
-IMG_DIR = './img_test/coat.jpeg'
+IMG_DIR = './img_test/boot.jpeg'
 loader = transforms.Compose([
-                            Invert(),
-                            #transforms.ColorJitter(brightness=(0.5,1.5), contrast=(10), saturation=(0.5,1.5) ),
+                            # Invert(),
+                            transforms.ColorJitter(brightness=(0.5,1.5), contrast=(10), saturation=(0.5,1.5) ),
                             transforms.Grayscale(num_output_channels=1),
                             transforms.Resize((28,28)),
                             transforms.ToTensor(),])
@@ -77,7 +77,8 @@ def image_loader(image_name):
     return image
 
 ti = image_loader(IMG_DIR)
-imshow(ti.squeeze(0), cmap="gray")
+# imshow(ti.squeeze(0), cmap="gray")
+imshow(ti.squeeze(0))
 MODEL.eval()
 output = MODEL(ti)
 tensor, label = torch.max(output, 1)
