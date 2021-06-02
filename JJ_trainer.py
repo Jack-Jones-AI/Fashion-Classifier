@@ -40,8 +40,7 @@ OPTIMIZER = torch.optim.Adam(MODEL.parameters(), lr=LEARNING_RATE)
 ACC_TEST = []
 EPOCH_LOSSES = []
 RUNNING_LOSS = 0
-MODEL_SAVE_PATH = "./trained_models"
-
+MODEL_SAVE_PATH = "./trained_models/trained_model.pt"
 
 ## TRAINING LOOPS
 for epoch in range(EPOCHS):
@@ -77,3 +76,7 @@ for epoch in range(EPOCHS):
 
 
 torch.save(MODEL, MODEL_SAVE_PATH)
+
+
+
+print("YAY IT FINISHED SUCCESSFULLY!!!")
