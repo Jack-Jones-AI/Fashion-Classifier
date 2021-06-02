@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-
+from invert import Invert
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
@@ -36,7 +36,7 @@ def imshow(image, ax=None, title=None, normalize=True):
     ax.tick_params(axis='both', length=0)
     ax.set_xticklabels('')
     ax.set_yticklabels('')
-
+    plt.show()
     return ax
 
 
@@ -57,26 +57,30 @@ def output_label(label):
     return output_mapping[input]
 
 
-IMG_DIR = './img_test/shoe.png'
+IMG_DIR = './img_test/coat.jpeg'
 loader = transforms.Compose([
+                            Invert(),
+                            #transforms.ColorJitter(brightness=(0.5,1.5), contrast=(10), saturation=(0.5,1.5) ),
+                            transforms.Grayscale(num_output_channels=1),
                             transforms.Resize((28,28)),
                             transforms.ToTensor(),])
                             #transforms.Normalize((0.5), (0.5))
                               #])
-
+#hue=(-0.1,0.1)
 def image_loader(image_name):
     image = Image.open(image_name)
     image = loader(image).float()
-    image = Variable(image, requires_grad=True)
+    image = Variable(image, requires_grad=False)
+    print(f"BEFORE UNSQUEEZE {image.shape}")
+
     image = image.unsqueeze(0)
     return image
 
 ti = image_loader(IMG_DIR)
-
+imshow(ti.squeeze(0), cmap="gray")
 MODEL.eval()
 output = MODEL(ti)
 tensor, label = torch.max(output, 1)
-
-print(output_label(label.item()))
-#imshow(tensor)
+print(label)
 print(output)
+print(output_label(label.item()))
