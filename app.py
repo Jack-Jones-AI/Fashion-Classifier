@@ -85,8 +85,8 @@ class FashionCNN(nn.Module):
 
 
 PATH = "./data/state_dict_model2.pt"
-# PATH = "./data/entire_model_v2.pt"
 model = torch.load(PATH)
+# PATH = "./data/entire_model_v2.pt"
 # model.load_state_dict(torch.load(PATH))
 # model.eval()
 # st.write(model)
