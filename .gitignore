@@ -12,3 +12,4 @@ data/resized_image_1.png
 img_test/download.png
 .DS_Store
 .DS_Store
+__pycache__/JJ_model.cpython-38.pyc
