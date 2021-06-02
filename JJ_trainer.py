@@ -11,7 +11,7 @@ import torchvision.transforms as transforms
 from torch.utils.data import Dataset, DataLoader
 from sklearn.metrics import confusion_matrix
 from JJ_model import JJCNN
-
+from JJ_datahandler import trainloader, testloader
 
 def calc_accuracy(mdl, test_data):
     # reduce/collapse the classification dimension according to max op

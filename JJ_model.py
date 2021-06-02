@@ -11,6 +11,8 @@ import torchvision.transforms as transforms
 from torch.utils.data import Dataset, DataLoader
 from sklearn.metrics import confusion_matrix
 
+
+
 df_train = pd.read_csv("./Data/fashion-mnist_train.csv")
 df_test = pd.read_csv("./Data/fashion-mnist_test.csv")
 
