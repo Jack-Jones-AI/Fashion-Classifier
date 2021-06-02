@@ -48,8 +48,12 @@ class FashionDataset(Dataset):
     def __len__(self):
         return len(self.images)
 
-
-
+#
+# loader = transforms.Compose([
+#                             transforms.Resize((28,28)),
+#                             transforms.ToTensor(),
+#                             transforms.Normalize((0.5), (0.5))
+#                               ])
 train_set = FashionDataset(df_train, transform=transforms.Compose([transforms.ToTensor()]))
 test_set = FashionDataset(df_test, transform=transforms.Compose([transforms.ToTensor()]))
 
