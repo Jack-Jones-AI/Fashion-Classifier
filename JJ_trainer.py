@@ -32,8 +32,8 @@ def calc_accuracy(mdl, test_data):
 
 
 ### TRAINING VARIABLES
-LEARNING_RATE = 0.01
-EPOCHS = 10
+LEARNING_RATE = 0.001
+EPOCHS = 3
 MODEL = JJCNN()
 CRITERION = nn.CrossEntropyLoss()
 OPTIMIZER = torch.optim.Adam(MODEL.parameters(), lr=LEARNING_RATE)
@@ -45,7 +45,7 @@ MODEL_SAVE_PATH = "./trained_models"
 
 ## TRAINING LOOPS
 for epoch in range(EPOCHS):
-    running_losses = []
+    RUNNING_LOSSES = []
     print(f"EPOCH: {epoch+1}/{EPOCHS}")
 
     for i, (images, labels) in enumerate(iter(trainloader)):
@@ -55,24 +55,24 @@ for epoch in range(EPOCHS):
         loss = CRITERION(output, labels)
         loss.backward()
         OPTIMIZER.step()
-        running_loss += loss.item()
+        RUNNING_LOSS += loss.item()
 
-        if i%500 ==0:
-            print(f"On Iteration: {i}, loss was: {round(running_loss/500, 4)}")
-            running_losses.append(running_loss)
-            running_loss = 0
+        if i%100 ==0:
+            print(f"On Iteration: {i}, loss was: {round(RUNNING_LOSS/100, 4)}")
+            RUNNING_LOSSES.append(RUNNING_LOSS)
+            RUNNING_LOSS = 0
 
     #print(running_losses)
-    epoch_losses.append(loss)
+    EPOCH_LOSSES.append(loss)
 
     print("\n HERE \n")
-    print(epoch_losses)
+    print(EPOCH_LOSSES)
 
     #### Validate
     MODEL.eval()
     with torch.no_grad():
         acc = calc_accuracy(MODEL, testloader)
-        acc_test.append(acc)
+        ACC_TEST.append(acc)
     MODEL.train()
 
 
