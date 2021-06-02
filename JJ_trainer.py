@@ -13,13 +13,30 @@ from sklearn.metrics import confusion_matrix
 from JJ_model import JJCNN
 
 
+def calc_accuracy(mdl, test_data):
+    # reduce/collapse the classification dimension according to max op
+    # resulting in most likely label
+    total_acc = []
+    for images, labels in iter(test_data):
+        #images.resize_(images.size()[0],784)
+        max_vals, max_indices = mdl(images).max(1)
+        # assumes the first dimension is batch size
+        n = max_indices.size(0)  # index 0 for extracting the # of elements
+        # calulate acc (note .item() to do float division)
+        acc = (max_indices == labels).sum().item() / n
+        total_acc.append(acc)
+
+    final_acc = sum(total_acc) / len(total_acc)
+    print(f"The average accuracy across all tests: {final_acc}, test_size: {len(total_acc)}")
+    return final_acc
+
 
 ### TRAINING VARIABLES
 LEARNING_RATE = 0.01
 EPOCHS = 10
 MODEL = JJCNN()
 CRITERION = nn.CrossEntropyLoss()
-OPTIMIZER = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
+OPTIMIZER = torch.optim.Adam(MODEL.parameters(), lr=LEARNING_RATE)
 ACC_TEST = []
 EPOCH_LOSSES = []
 RUNNING_LOSS = 0
@@ -33,11 +50,11 @@ for epoch in range(EPOCHS):
 
     for i, (images, labels) in enumerate(iter(trainloader)):
         #images.resize_(images.size()[0],784)
-        optimizer.zero_grad()
-        output = model.forward(images)
-        loss = criterion(output, labels)
+        OPTIMIZER.zero_grad()
+        output = MODEL.forward(images)
+        loss = CRITERION(output, labels)
         loss.backward()
-        optimizer.step()
+        OPTIMIZER.step()
         running_loss += loss.item()
 
         if i%500 ==0:
@@ -52,11 +69,11 @@ for epoch in range(EPOCHS):
     print(epoch_losses)
 
     #### Validate
-    model.eval()
+    MODEL.eval()
     with torch.no_grad():
-        acc = calc_accuracy(model, testloader)
+        acc = calc_accuracy(MODEL, testloader)
         acc_test.append(acc)
-    model.train()
+    MODEL.train()
 
 
 torch.save(MODEL, MODEL_SAVE_PATH)
