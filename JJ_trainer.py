@@ -23,13 +23,13 @@ OPTIMIZER = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
 ACC_TEST = []
 EPOCH_LOSSES = []
 RUNNING_LOSS = 0
-
+MODEL_SAVE_PATH = "./trained_models"
 
 
 ## TRAINING LOOPS
 for epoch in range(EPOCHS):
     running_losses = []
-    print(f"EPOCH: {epoch+1}/{epochs}")
+    print(f"EPOCH: {epoch+1}/{EPOCHS}")
 
     for i, (images, labels) in enumerate(iter(trainloader)):
         #images.resize_(images.size()[0],784)
@@ -57,3 +57,6 @@ for epoch in range(EPOCHS):
         acc = calc_accuracy(model, testloader)
         acc_test.append(acc)
     model.train()
+
+
+torch.save(MODEL, MODEL_SAVE_PATH)

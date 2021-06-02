@@ -13,6 +13,10 @@ from sklearn.metrics import confusion_matrix
 from JJ_model import JJCNN
 
 
+
+df_train = pd.read_csv("./Data/fashion-mnist_train.csv")
+df_test = pd.read_csv("./Data/fashion-mnist_test.csv")
+
 class FashionDataset(Dataset):
     """User defined class to build a datset using Pytorch class Dataset."""
 
@@ -49,5 +53,5 @@ class FashionDataset(Dataset):
 train_set = FashionDataset(df_train, transform=transforms.Compose([transforms.ToTensor()]))
 test_set = FashionDataset(df_test, transform=transforms.Compose([transforms.ToTensor()]))
 
-train_loader = DataLoader(train_set, batch_size=100)
-test_loader = DataLoader(train_set, batch_size=100)
+trainloader = DataLoader(train_set, batch_size=100)
+testloader = DataLoader(train_set, batch_size=100)
