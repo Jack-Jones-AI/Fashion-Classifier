@@ -13,3 +13,4 @@ img_test/download.png
 .DS_Store
 .DS_Store
 __pycache__/JJ_model.cpython-38.pyc
+data/fashion-mnist_train.csv
